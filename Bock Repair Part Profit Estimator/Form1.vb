@@ -6,26 +6,39 @@ Public Class Form1
     Private totalQuantity As Integer
     Private Sub Button1_Click(sender As Object, e As EventArgs) Handles ComputeBtn.Click
         Try
-            Dim RetailPrice, WholesaleCost As Decimal
-            Dim Quantity As Integer
+            ' Parse input values
+            Dim retailPrice As Decimal = Decimal.Parse(RetailPriceTextBox.Text)
+            Dim wholesaleCost As Decimal = Decimal.Parse(WholesaleCostTextBox.Text)
+            Dim quantity As Integer = Integer.Parse(QuantityTextBox.Text)
 
-            'Accept and parse values
-            RetailPrice = Decimal.Parse(RetailPriceTextBox.Text, Globalization.NumberStyles.Currency)
-            WholesaleCost = Decimal.Parse(WholesaleCostTextBox.Text)
-            Quantity = Integer.Parse(QuantityTextBox.Text)
+            ' Calculate gross profit
+            Dim grossProfit As Decimal = quantity * (retailPrice - wholesaleCost)
 
-            'perform calculations
-            GrossProfitTextBox.Text = QuantityTextBox.Text * (RetailPriceTextBox.Text - WholesaleCostTextBox.Text)
-            StorageChargesTextBox.Text = GrossProfitTextBox.Text * 0.05
-            NetProfitTextBox.Text = GrossProfitTextBox.Text - StorageChargesTextBox.Text
+            ' Calculate storage charges
+            Dim storageCharges As Decimal = 0.05D * grossProfit
 
-            ' Disable Compute Button and enable Reset Form Button
+            ' Calculate net profit
+            Dim netProfit As Decimal = grossProfit - storageCharges
+
+            ' Display results in the respective text boxes
+            GrossProfitTextBox.Text = grossProfit.ToString("C")
+            StorageChargesTextBox.Text = storageCharges.ToString("C")
+            NetProfitTextBox.Text = netProfit.ToString("C")
+
+            ' Accumulate total net profit and quantity
+            totalNetProfit += netProfit
+            totalQuantity += quantity
+
+            ' Disable Compute button and enable Reset Form button
             ComputeBtn.Enabled = False
             ResetFormBtn.Enabled = True
 
+            ' Set focus to Part Identifier TextBox control
+            PartIdentifierTextBox.Focus()
+
         Catch ex As Exception
-            'show error message for invalid input
-            MessageBox.Show("Error in Retail Price, Wholesale Cost, or Quantity")
+            ' Handle any exceptions that may occur
+            MessageBox.Show("Error: " & ex.Message, "Error")
         End Try
 
     End Sub
@@ -36,22 +49,21 @@ Public Class Form1
 
     Private Sub TotalNetProfitBtn_Click(sender As Object, e As EventArgs) Handles TotalNetProfitBtn.Click
         Try
-            ' Check if any parts estimates have been made
-            If totalQuantity = 0 Then
-                MessageBox.Show("No parts estimates have been made yet.")
-                Return
-            End If
-
-            ' Compute average net profit
+            ' Calculate average net profit
             Dim averageNetProfit As Decimal = totalNetProfit / totalQuantity
 
-            ' Display the total net profit, total quantity, and average net profit
-            Dim message As String = $"Total Net Profit: {totalNetProfit:C}" & vbCrLf &
-                                    $"Total Quantity: {totalQuantity}" & vbCrLf &
-                                    $"Average Net Profit: {averageNetProfit:C}"
-            MessageBox.Show(message)
+            ' Display message box with the total net profit, total quantity, and average net profit
+            MessageBox.Show("Total Net Profit: " & totalNetProfit.ToString("C") & Environment.NewLine &
+                            "Total Quantity of Parts: " & totalQuantity.ToString() & Environment.NewLine &
+                            "Average Net Profit: " & averageNetProfit.ToString("C"), "Total Net Profit Summary")
+
         Catch ex As Exception
-            MessageBox.Show("An error occurred: " & ex.Message)
+            ' Handle any exceptions that may occur
+            If totalQuantity = 0 Then
+                MessageBox.Show("No parts estimates have been made yet.", "No Parts Estimates")
+            Else
+                MessageBox.Show("An error occurred while calculating the total net profit.", "Error")
+            End If
         End Try
     End Sub
 
@@ -65,20 +77,15 @@ Public Class Form1
 
     Private Sub ResetFormBtn_Click(sender As Object, e As EventArgs) Handles ResetFormBtn.Click
         ' Clear all input and output controls
+        PartIdentifierTextBox.Clear()
         RetailPriceTextBox.Clear()
         WholesaleCostTextBox.Clear()
         QuantityTextBox.Clear()
         GrossProfitTextBox.Clear()
         StorageChargesTextBox.Clear()
         NetProfitTextBox.Clear()
-        PartIdentifierTextBox.Clear()
-        PartDescriptionTextBox.Clear()
 
-        ' Reset module-level variables
-        totalNetProfit = 0
-        totalQuantity = 0
-
-        ' Enable Compute Button and disable Reset Form Button
+        ' Enable Compute button and disable Reset Form button
         ComputeBtn.Enabled = True
         ResetFormBtn.Enabled = False
 
@@ -95,13 +102,13 @@ Public Class Form1
         Dim selectionStart As Integer = RetailPriceTextBox.SelectionStart
 
         ' Format the text as currency with a dollar sign
-        RetailPriceTextBox.Text = FormatCurrency(RetailPriceTextBox.Text, 2, TriState.True, TriState.True, TriState.True)
+        'RetailPriceTextBox.Text = FormatCurrency(RetailPriceTextBox.Text, 2, TriState.True, TriState.True, TriState.True)
 
         ' Set the selection start position back to the correct position
         RetailPriceTextBox.SelectionStart = selectionStart
     End Sub
 
     Private Sub NetProfitTextBox_TextChanged(sender As Object, e As EventArgs) Handles NetProfitTextBox.TextChanged
-        NetProfitTextBox.Text = FormatCurrency(NetProfitTextBox.Text, 2, TriState.True, TriState.True, TriState.True)
+        ' NetProfitTextBox.Text = FormatCurrency(NetProfitTextBox.Text, 2, TriState.True, TriState.True, TriState.True)
     End Sub
 End Class
